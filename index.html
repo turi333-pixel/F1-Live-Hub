@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description"
+    content="F1 Live Hub — Real-time Formula 1 standings, schedules, results, and championship scenarios" />
+  <title>F1 Live Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Racing+Sans+One&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/global.css" />
+  <link rel="stylesheet" href="/src/styles/components.css" />
+  <link rel="stylesheet" href="/src/styles/pages.css" />
+</head>
+
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <header class="top-bar">
+      <div class="top-bar-logo">
+        <span class="logo-f1">F1</span>
+        <span class="logo-hub">LIVE HUB</span>
+      </div>
+      <div class="top-bar-season">2026</div>
+    </header>
+
+    <!-- Page container -->
+    <main id="page-container" class="page-container">
+      <div class="loader-fullscreen">
+        <div class="loader-spinner"></div>
+        <p>Loading F1 data...</p>
+      </div>
+    </main>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <a href="#/" class="nav-item active" data-page="home">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        </svg>
+        <span>Home</span>
+      </a>
+      <a href="#/calendar" class="nav-item" data-page="calendar">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path
+            d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+        </svg>
+        <span>Calendar</span>
+      </a>
+      <a href="#/standings" class="nav-item" data-page="standings">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path d="M7 19h10V4H7v15zm-5 0h4V9H2v10zM18 9v10h4V9h-4z" />
+        </svg>
+        <span>Standings</span>
+      </a>
+      <a href="#/alonso" class="nav-item" data-page="alonso">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+        </svg>
+        <span>Alonso</span>
+      </a>
+      <a href="#/scenarios" class="nav-item" data-page="scenarios">
+        <svg class="nav-icon" viewBox="0 0 24 24">
+          <path
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+        </svg>
+        <span>Scenarios</span>
+      </a>
+    </nav>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
