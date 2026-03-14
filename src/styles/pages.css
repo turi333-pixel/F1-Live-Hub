@@ -67,14 +67,50 @@
     transition: width 0.5s var(--ease-out);
 }
 
-/* ─── Alonso Page ────────────────────────── */
-.alonso-header {
+/* ─── Driver Page ─────────────────────────── */
+.driver-picker {
+    padding: var(--space-md) 0 var(--space-sm);
+}
+
+.driver-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.driver-chip {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg-glass);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.driver-chip:hover {
+    border-color: var(--f1-red);
+    color: var(--text-primary);
+}
+
+.driver-chip.active {
+    background: var(--f1-red);
+    border-color: var(--f1-red);
+    color: white;
+    box-shadow: 0 2px 10px rgba(225, 6, 0, 0.35);
+}
+
+.driver-header {
     text-align: center;
     padding: var(--space-lg) 0;
     position: relative;
 }
 
-.alonso-avatar {
+.driver-avatar {
     width: 80px;
     height: 80px;
     border-radius: 50%;
@@ -89,26 +125,26 @@
     box-shadow: 0 4px 20px rgba(225, 6, 0, 0.3);
 }
 
-.alonso-name {
+.driver-name {
     font-family: var(--font-heading);
     font-size: 1.8rem;
     letter-spacing: 2px;
 }
 
-.alonso-team {
+.driver-team {
     font-size: 0.8rem;
     color: var(--text-secondary);
     margin-top: var(--space-xs);
 }
 
-.alonso-position {
+.driver-position {
     font-family: var(--font-heading);
     font-size: 3rem;
     color: var(--f1-red);
     margin-top: var(--space-sm);
 }
 
-.alonso-position-label {
+.driver-position-label {
     font-size: 0.65rem;
     color: var(--text-tertiary);
     text-transform: uppercase;

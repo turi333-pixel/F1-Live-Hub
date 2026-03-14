@@ -20,7 +20,7 @@ export const api = {
     constructorStandings: () => fetchAPI('/standings/constructors'),
     latestResults: () => fetchAPI('/results/latest'),
     news: () => fetchAPI('/news'),
-    alonso: () => fetchAPI('/alonso'),
+    driver: (driverId) => fetchAPI(`/driver/${driverId}`),
     scenarios: () => fetchAPI('/scenarios'),
 };
 

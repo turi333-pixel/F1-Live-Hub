@@ -1,5 +1,6 @@
 // Standings Page — Driver & Constructor toggle
 import api from '../api.js';
+import { t } from '../i18n.js';
 
 const TEAM_COLORS = {
     red_bull: '#3671C6', mercedes: '#27F4D2', ferrari: '#E8002D',
@@ -62,23 +63,23 @@ export async function renderStandings() {
     const noData = `
     <div class="empty-state">
       <div class="empty-state-icon">📊</div>
-      <div class="empty-state-text">No standings data yet. The season starts in March 2026!</div>
+      <div class="empty-state-text">${t('standings.noData')}</div>
     </div>
   `;
 
     return `
     <div class="standings-page">
-      <div class="section-header">Championship Standings</div>
+      <div class="section-header">${t('standings.title')}</div>
 
       <div class="tab-bar" id="standings-tabs">
-        <button class="tab-btn active" data-tab="drivers" onclick="switchStandingsTab('drivers')">Drivers</button>
-        <button class="tab-btn" data-tab="constructors" onclick="switchStandingsTab('constructors')">Constructors</button>
+        <button class="tab-btn active" data-tab="drivers" onclick="switchStandingsTab('drivers')">${t('standings.drivers')}</button>
+        <button class="tab-btn" data-tab="constructors" onclick="switchStandingsTab('constructors')">${t('standings.constructors')}</button>
       </div>
 
       <div id="tab-drivers" class="tab-content">
         ${drivers.length > 0 ? `
           <table class="data-table">
-            <thead><tr><th>Pos</th><th>Driver</th><th>Pts</th><th></th></tr></thead>
+            <thead><tr><th>${t('common.pos')}</th><th>${t('common.driver')}</th><th>${t('common.pts')}</th><th></th></tr></thead>
             <tbody>${driverRows}</tbody>
           </table>
         ` : noData}
@@ -87,7 +88,7 @@ export async function renderStandings() {
       <div id="tab-constructors" class="tab-content" style="display:none">
         ${constructors.length > 0 ? `
           <table class="data-table">
-            <thead><tr><th>Pos</th><th>Constructor</th><th>Pts</th><th></th></tr></thead>
+            <thead><tr><th>${t('common.pos')}</th><th>${t('common.constructor')}</th><th>${t('common.pts')}</th><th></th></tr></thead>
             <tbody>${constructorRows}</tbody>
           </table>
         ` : noData}
@@ -96,7 +97,6 @@ export async function renderStandings() {
   `;
 }
 
-// Tab switcher — attached to window for onclick
 window.switchStandingsTab = function (tab) {
     document.querySelectorAll('#standings-tabs .tab-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.tab === tab);

@@ -2,15 +2,16 @@
 import { renderHome } from './pages/home.js';
 import { renderCalendar } from './pages/calendar.js';
 import { renderStandings } from './pages/standings.js';
-import { renderAlonso } from './pages/alonso.js';
+import { renderDriver } from './pages/driver.js';
 import { renderScenarios } from './pages/scenarios.js';
 import { renderResults } from './pages/results.js';
+import { t, getLanguage, setLanguage } from './i18n.js';
 
 const pages = {
     '/': renderHome,
     '/calendar': renderCalendar,
     '/standings': renderStandings,
-    '/alonso': renderAlonso,
+    '/driver': renderDriver,
     '/scenarios': renderScenarios,
     '/results': renderResults,
 };
@@ -27,9 +28,22 @@ function updateNav(route) {
             (page === 'home' && (route === '/' || route === '')) ||
             (page === 'calendar' && route === '/calendar') ||
             (page === 'standings' && (route === '/standings' || route === '/results')) ||
-            (page === 'alonso' && route === '/alonso') ||
+            (page === 'driver' && route === '/driver') ||
             (page === 'scenarios' && route === '/scenarios');
         item.classList.toggle('active', isActive);
+    });
+}
+
+function updateNavLabels() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+}
+
+function updateLangSelector() {
+    const lang = getLanguage();
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
     });
 }
 
@@ -38,11 +52,10 @@ async function navigate() {
     const container = document.getElementById('page-container');
     const render = pages[route] || pages['/'];
 
-    // Show loader
     container.innerHTML = `
     <div class="loader-fullscreen">
       <div class="loader-spinner"></div>
-      <p>Loading...</p>
+      <p>${t('common.loading')}</p>
     </div>
   `;
 
@@ -52,13 +65,12 @@ async function navigate() {
         const html = await render();
         container.innerHTML = `<div class="page-enter">${html}</div>`;
 
-        // Run any post-render setup (charts, timers, etc.)
         if (route === '/' || route === '') {
             const { postRenderHome } = await import('./pages/home.js');
             postRenderHome?.();
-        } else if (route === '/alonso') {
-            const { postRenderAlonso } = await import('./pages/alonso.js');
-            postRenderAlonso?.();
+        } else if (route === '/driver') {
+            const { postRenderDriver } = await import('./pages/driver.js');
+            postRenderDriver?.();
         } else if (route === '/scenarios') {
             const { postRenderScenarios } = await import('./pages/scenarios.js');
             postRenderScenarios?.();
@@ -68,11 +80,29 @@ async function navigate() {
         container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">⚠️</div>
-        <div class="empty-state-text">Something went wrong. Please try again.</div>
+        <div class="empty-state-text">${t('common.error')}</div>
       </div>
     `;
     }
 }
 
+// Language selector
+document.getElementById('lang-selector')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.lang-btn');
+    if (!btn) return;
+    setLanguage(btn.dataset.lang);
+});
+
+// Re-render on language change
+document.addEventListener('languagechange', () => {
+    updateNavLabels();
+    updateLangSelector();
+    navigate();
+});
+
 window.addEventListener('hashchange', navigate);
-window.addEventListener('DOMContentLoaded', navigate);
+window.addEventListener('DOMContentLoaded', () => {
+    updateNavLabels();
+    updateLangSelector();
+    navigate();
+});

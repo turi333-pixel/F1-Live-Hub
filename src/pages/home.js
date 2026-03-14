@@ -1,7 +1,7 @@
 // Home Page — Next Race + Quick Tiles
 import api from '../api.js';
+import { t, getDateLocale } from '../i18n.js';
 
-// Team colors for visual flair
 const TEAM_COLORS = {
     red_bull: '#3671C6', mercedes: '#27F4D2', ferrari: '#E8002D',
     mclaren: '#FF8000', aston_martin: '#229971', alpine: '#FF87BC',
@@ -10,9 +10,10 @@ const TEAM_COLORS = {
 };
 
 function formatDate(dateStr, timeStr) {
+    const locale = getDateLocale();
     const d = new Date(`${dateStr}T${timeStr || '00:00:00Z'}`);
-    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) +
-        ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+    return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' }) +
+        ' · ' + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
 }
 
 function getCountdown(targetDate) {
@@ -33,7 +34,7 @@ function sessionRows(race) {
     if (race.SecondPractice) sessions.push({ name: 'FP2', ...race.SecondPractice });
     if (race.ThirdPractice) sessions.push({ name: 'FP3', ...race.ThirdPractice });
     if (race.SprintQualifying) sessions.push({ name: 'Sprint Quali', ...race.SprintQualifying });
-    if (race.Sprint) sessions.push({ name: 'Sprint', ...race.Sprint });
+    if (race.Sprint) sessions.push({ name: t('common.sprint'), ...race.Sprint });
     if (race.Qualifying) sessions.push({ name: 'Qualifying', ...race.Qualifying });
     sessions.push({ name: 'Race', date: race.date, time: race.time });
     return sessions.map(s =>
@@ -53,7 +54,6 @@ export async function renderHome() {
         api.news(),
     ]);
 
-    // Next Race Section
     let heroHTML = '';
     if (nextRaceData?.race) {
         const race = nextRaceData.race;
@@ -65,8 +65,8 @@ export async function renderHome() {
         heroHTML = `
       <div class="card card-accent home-hero fade-in">
         <div class="card-subtitle">
-          ${isSprint ? '<span class="badge badge-purple">Sprint Weekend</span> · ' : ''}
-          Round ${race.round} of 24
+          ${isSprint ? `<span class="badge badge-purple">${t('common.sprintWeekend')}</span> · ` : ''}
+          ${t('common.round')} ${race.round} ${t('common.of')} 24
         </div>
         <h2 class="hero-race-name">${race.raceName}</h2>
         <p class="hero-circuit">${race.Circuit.circuitName} · ${race.Circuit.Location.locality}, ${race.Circuit.Location.country}</p>
@@ -75,19 +75,19 @@ export async function renderHome() {
         <div class="countdown" id="countdown" data-target="${raceDate.toISOString()}">
           <div class="countdown-unit">
             <div class="countdown-value" id="cd-days">${cd.days}</div>
-            <div class="countdown-label">Days</div>
+            <div class="countdown-label">${t('common.days')}</div>
           </div>
           <div class="countdown-unit">
             <div class="countdown-value" id="cd-hours">${cd.hours}</div>
-            <div class="countdown-label">Hours</div>
+            <div class="countdown-label">${t('common.hours')}</div>
           </div>
           <div class="countdown-unit">
             <div class="countdown-value" id="cd-mins">${cd.mins}</div>
-            <div class="countdown-label">Min</div>
+            <div class="countdown-label">${t('common.min')}</div>
           </div>
           <div class="countdown-unit">
             <div class="countdown-value" id="cd-secs">${cd.secs}</div>
-            <div class="countdown-label">Sec</div>
+            <div class="countdown-label">${t('common.sec')}</div>
           </div>
         </div>
 
@@ -97,13 +97,13 @@ export async function renderHome() {
               🌡️ <span class="weather-temp">${Math.round(weather.air_temperature || 0)}°C</span>
               💧 ${weather.humidity || '—'}%
               💨 ${weather.wind_speed ? Math.round(weather.wind_speed) + ' km/h' : '—'}
-              ${weather.rainfall ? '🌧️ Rain' : '☀️'}
+              ${weather.rainfall ? `🌧️ ${t('common.rain')}` : '☀️'}
             </div>
           </div>
         ` : ''}
 
         <div style="margin-top: var(--space-lg);">
-          <div class="card-subtitle">Session Schedule</div>
+          <div class="card-subtitle">${t('home.sessionSchedule')}</div>
           <div class="session-list">${sessionRows(race)}</div>
         </div>
       </div>
@@ -113,13 +113,12 @@ export async function renderHome() {
       <div class="card card-accent home-hero fade-in">
         <div class="empty-state">
           <div class="empty-state-icon">🏁</div>
-          <div class="empty-state-text">Season hasn't started yet. Check back soon!</div>
+          <div class="empty-state-text">${t('home.seasonNotStarted')}</div>
         </div>
       </div>
     `;
     }
 
-    // Driver standings preview
     const topDrivers = driverStandings?.DriverStandings?.slice(0, 3) || [];
     const driverTileContent = topDrivers.length > 0
         ? topDrivers.map((d, i) => `
@@ -129,9 +128,8 @@ export async function renderHome() {
           <span class="points" style="margin-left:auto;font-size:0.75rem;">${d.points}</span>
         </div>
       `).join('')
-        : '<span style="font-size:0.75rem;color:var(--text-tertiary);">Awaiting data</span>';
+        : `<span style="font-size:0.75rem;color:var(--text-tertiary);">${t('common.awaitingData')}</span>`;
 
-    // Constructor standings preview
     const topTeams = constructorStandings?.ConstructorStandings?.slice(0, 3) || [];
     const teamTileContent = topTeams.length > 0
         ? topTeams.map((c, i) => `
@@ -141,9 +139,8 @@ export async function renderHome() {
           <span class="points" style="margin-left:auto;font-size:0.75rem;">${c.points}</span>
         </div>
       `).join('')
-        : '<span style="font-size:0.75rem;color:var(--text-tertiary);">Awaiting data</span>';
+        : `<span style="font-size:0.75rem;color:var(--text-tertiary);">${t('common.awaitingData')}</span>`;
 
-    // Latest results preview
     const podium = latestResults?.Results?.slice(0, 3) || [];
     const resultsTileContent = podium.length > 0
         ? `<div class="tile-detail" style="margin-bottom:4px;">${latestResults.raceName}</div>` +
@@ -153,9 +150,8 @@ export async function renderHome() {
           <span style="font-size:0.75rem;font-weight:600;">${r.Driver.familyName}</span>
         </div>
       `).join('')
-        : '<span style="font-size:0.75rem;color:var(--text-tertiary);">No results yet</span>';
+        : `<span style="font-size:0.75rem;color:var(--text-tertiary);">${t('common.noResults')}</span>`;
 
-    // News preview
     const topNews = (newsData || []).slice(0, 3);
     const newsTileContent = topNews.length > 0
         ? topNews.map(n => `
@@ -164,39 +160,38 @@ export async function renderHome() {
           <span class="news-meta" style="font-size:0.6rem;">${n.source}</span>
         </div>
       `).join('')
-        : '<span style="font-size:0.75rem;color:var(--text-tertiary);">No news available</span>';
+        : `<span style="font-size:0.75rem;color:var(--text-tertiary);">${t('common.noNews')}</span>`;
 
     return `
     ${heroHTML}
 
-    <div class="section-header">Quick Access</div>
+    <div class="section-header">${t('home.quickAccess')}</div>
 
     <div class="tiles-grid">
       <a href="#/standings" class="tile slide-up" style="animation-delay:0.05s">
         <div class="tile-icon" style="background:rgba(255,215,0,0.15)">🏆</div>
-        <div class="tile-title">Drivers</div>
+        <div class="tile-title">${t('home.drivers')}</div>
         ${driverTileContent}
       </a>
       <a href="#/standings" class="tile slide-up" style="animation-delay:0.1s">
         <div class="tile-icon" style="background:rgba(68,138,255,0.15)">🏗️</div>
-        <div class="tile-title">Constructors</div>
+        <div class="tile-title">${t('home.constructors')}</div>
         ${teamTileContent}
       </a>
       <a href="#/results" class="tile slide-up" style="animation-delay:0.15s">
         <div class="tile-icon" style="background:rgba(0,230,118,0.15)">🏁</div>
-        <div class="tile-title">Latest Results</div>
+        <div class="tile-title">${t('home.latestResults')}</div>
         ${resultsTileContent}
       </a>
       <div class="tile slide-up" style="animation-delay:0.2s">
         <div class="tile-icon" style="background:rgba(255,135,188,0.15)">📰</div>
-        <div class="tile-title">Breaking News</div>
+        <div class="tile-title">${t('home.breakingNews')}</div>
         ${newsTileContent}
       </div>
     </div>
   `;
 }
 
-// Post-render: start countdown timer
 let countdownInterval = null;
 export function postRenderHome() {
     if (countdownInterval) clearInterval(countdownInterval);

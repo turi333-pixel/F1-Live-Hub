@@ -36,8 +36,8 @@ export async function refreshAll() {
         safeRefresh('constructorStandings', () => jolpica.getConstructorStandings(), TTL.STANDINGS),
         safeRefresh('lastRaceResults', () => jolpica.getLastRaceResults(), TTL.RESULTS),
         safeRefresh('news', () => news.getNews(), TTL.NEWS),
-        safeRefresh('alonsoResults', () => jolpica.getDriverResults('alonso'), TTL.ALONSO),
-        safeRefresh('alonsoQualifying', () => jolpica.getQualifying('alonso'), TTL.ALONSO),
+        safeRefresh('driver_results_alonso', () => jolpica.getDriverResults('alonso'), TTL.ALONSO),
+        safeRefresh('driver_quali_alonso', () => jolpica.getQualifying('alonso'), TTL.ALONSO),
     ]);
     console.log('[Scheduler] Refresh cycle complete');
 }

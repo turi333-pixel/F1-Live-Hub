@@ -87,118 +87,123 @@ router.get('/news', (req, res) => {
     }, res);
 });
 
-// ─── Alonso ────────────────────────────────────
-router.get('/alonso', async (req, res) => {
-    try {
-        const [standings, results, qualifying] = await Promise.all([
-            cache.get('driverStandings') || jolpica.getDriverStandings(),
-            cache.get('alonsoResults') || jolpica.getDriverResults('alonso'),
-            cache.get('alonsoQualifying') || jolpica.getQualifying('alonso'),
-        ]);
+// ─── Driver Stats (shared helper) ──────────────
+function buildDriverData(driverId, standings, results, qualifying) {
+    const driverStanding = standings?.DriverStandings?.find(
+        (d) => d.Driver?.driverId === driverId
+    );
 
-        // Find Alonso in standings
-        const alonsoStanding = standings?.DriverStandings?.find(
-            (d) => d.Driver?.driverId === 'alonso'
+    let bestFinish = 99, totalPoints = 0, dnfs = 0, finishPositions = [];
+    let races = [];
+
+    if (results && Array.isArray(results)) {
+        races = results.map((race) => {
+            const result = race.Results?.[0];
+            if (!result) return null;
+            const pos = parseInt(result.position) || 0;
+            const pts = parseFloat(result.points) || 0;
+            totalPoints += pts;
+            if (result.status !== 'Finished' && !result.status?.startsWith('+')) dnfs++;
+            if (pos > 0 && pos < bestFinish) bestFinish = pos;
+            finishPositions.push(pos);
+            return {
+                round: race.round,
+                raceName: race.raceName,
+                position: pos,
+                points: pts,
+                grid: parseInt(result.grid) || 0,
+                status: result.status,
+                time: result.Time?.time || result.status,
+            };
+        }).filter(Boolean);
+    }
+
+    const avgFinish = finishPositions.length > 0
+        ? (finishPositions.reduce((a, b) => a + b, 0) / finishPositions.length).toFixed(1)
+        : null;
+
+    let qualiData = [];
+    if (qualifying && Array.isArray(qualifying)) {
+        qualiData = qualifying.map((race) => {
+            const q = race.QualifyingResults?.[0];
+            return {
+                round: race.round,
+                raceName: race.raceName,
+                qualiPosition: parseInt(q?.position) || 0,
+                q1: q?.Q1 || null,
+                q2: q?.Q2 || null,
+                q3: q?.Q3 || null,
+            };
+        });
+    }
+
+    let teammate = null;
+    if (driverStanding && standings?.DriverStandings) {
+        const driverTeam = driverStanding.Constructors?.[0]?.constructorId;
+        teammate = standings.DriverStandings.find(
+            (d) => d.Driver?.driverId !== driverId &&
+                d.Constructors?.[0]?.constructorId === driverTeam
         );
+    }
 
-        // Compute race stats
-        let bestFinish = 99, totalPoints = 0, dnfs = 0, finishPositions = [];
-        let races = [];
-
-        if (results && Array.isArray(results)) {
-            races = results.map((race) => {
-                const result = race.Results?.[0];
-                if (!result) return null;
-                const pos = parseInt(result.position) || 0;
-                const pts = parseFloat(result.points) || 0;
-                totalPoints += pts;
-                if (result.status !== 'Finished' && !result.status?.startsWith('+')) {
-                    dnfs++;
-                }
-                if (pos > 0 && pos < bestFinish) bestFinish = pos;
-                finishPositions.push(pos);
-                return {
-                    round: race.round,
-                    raceName: race.raceName,
-                    position: pos,
-                    points: pts,
-                    grid: parseInt(result.grid) || 0,
-                    status: result.status,
-                    time: result.Time?.time || result.status,
-                };
-            }).filter(Boolean);
-        }
-
-        const avgFinish = finishPositions.length > 0
-            ? (finishPositions.reduce((a, b) => a + b, 0) / finishPositions.length).toFixed(1)
-            : null;
-
-        // Qualifying data
-        let qualiData = [];
-        if (qualifying && Array.isArray(qualifying)) {
-            qualiData = qualifying.map((race) => {
-                const q = race.QualifyingResults?.[0];
-                return {
-                    round: race.round,
-                    raceName: race.raceName,
-                    qualiPosition: parseInt(q?.position) || 0,
-                    q1: q?.Q1 || null,
-                    q2: q?.Q2 || null,
-                    q3: q?.Q3 || null,
-                };
-            });
-        }
-
-        // Teammate comparison (find teammate from standings by same constructor)
-        let teammate = null;
-        if (alonsoStanding && standings?.DriverStandings) {
-            const alonsoTeam = alonsoStanding.Constructors?.[0]?.constructorId;
-            teammate = standings.DriverStandings.find(
-                (d) => d.Driver?.driverId !== 'alonso' &&
-                    d.Constructors?.[0]?.constructorId === alonsoTeam
-            );
-        }
-
-        // Streaks
-        let currentStreak = 0, streakType = 'points';
+    let currentStreak = 0, streakType = 'points';
+    for (let i = races.length - 1; i >= 0; i--) {
+        if (races[i].points > 0) currentStreak++;
+        else break;
+    }
+    if (currentStreak === 0) {
+        streakType = 'no-points';
         for (let i = races.length - 1; i >= 0; i--) {
-            if (races[i].points > 0) currentStreak++;
+            if (races[i].points === 0) currentStreak++;
             else break;
         }
-        if (currentStreak === 0) {
-            streakType = 'no-points';
-            for (let i = races.length - 1; i >= 0; i--) {
-                if (races[i].points === 0) currentStreak++;
-                else break;
-            }
-        }
+    }
 
-        const data = {
-            driver: alonsoStanding?.Driver || { driverId: 'alonso', givenName: 'Fernando', familyName: 'Alonso' },
-            team: alonsoStanding?.Constructors?.[0] || null,
-            position: alonsoStanding?.position || null,
-            points: alonsoStanding?.points || totalPoints.toString(),
-            wins: alonsoStanding?.wins || '0',
-            races,
-            qualiData,
-            stats: {
-                bestFinish: bestFinish < 99 ? bestFinish : null,
-                avgFinish,
-                dnfs,
-                pointsPerRace: races.length > 0 ? (totalPoints / races.length).toFixed(1) : null,
-                totalRaces: races.length,
-                streak: { count: currentStreak, type: streakType },
-            },
-            teammate: teammate ? {
-                driver: teammate.Driver,
-                position: teammate.position,
-                points: teammate.points,
-            } : null,
-        };
+    return {
+        driver: driverStanding?.Driver || { driverId },
+        team: driverStanding?.Constructors?.[0] || null,
+        position: driverStanding?.position || null,
+        points: driverStanding?.points || totalPoints.toString(),
+        wins: driverStanding?.wins || '0',
+        races,
+        qualiData,
+        stats: {
+            bestFinish: bestFinish < 99 ? bestFinish : null,
+            avgFinish,
+            dnfs,
+            pointsPerRace: races.length > 0 ? (totalPoints / races.length).toFixed(1) : null,
+            totalRaces: races.length,
+            streak: { count: currentStreak, type: streakType },
+        },
+        teammate: teammate ? {
+            driver: teammate.Driver,
+            position: teammate.position,
+            points: teammate.points,
+        } : null,
+    };
+}
 
+// ─── Driver ────────────────────────────────────
+router.get('/driver/:driverId', async (req, res) => {
+    const { driverId } = req.params;
+    if (!/^[a-z_]+$/.test(driverId)) {
+        return res.status(400).json({ error: 'Invalid driver ID' });
+    }
+    try {
+        const resultsKey = `driver_results_${driverId}`;
+        const qualiKey = `driver_quali_${driverId}`;
+        const [standings, results, qualifying] = await Promise.all([
+            cache.get('driverStandings') || jolpica.getDriverStandings(),
+            cache.get(resultsKey) || jolpica.getDriverResults(driverId),
+            cache.get(qualiKey) || jolpica.getQualifying(driverId),
+        ]);
+        if (results) cache.set(resultsKey, results, 10 * 60 * 1000);
+        if (qualifying) cache.set(qualiKey, qualifying, 10 * 60 * 1000);
+
+        const data = buildDriverData(driverId, standings, results, qualifying);
         res.json({ data });
     } catch (err) {
-        console.error('[Routes] Alonso error:', err);
+        console.error('[Routes] Driver error:', err);
         res.status(500).json({ error: err.message });
     }
 });

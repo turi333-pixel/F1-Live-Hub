@@ -326,7 +326,7 @@
 }
 
 .chart-canvas {
-    width: 100%;
+    display: block;
     height: auto;
 }
 
@@ -564,4 +564,35 @@
     border-radius: 50%;
     display: inline-block;
     margin-right: 6px;
+}
+/* ─── Language Selector ─────────────────── */
+.lang-selector {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.lang-btn {
+    padding: 3px 7px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-tertiary);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.lang-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+
+.lang-btn.active {
+    background: var(--f1-red);
+    color: white;
+    border-color: var(--f1-red);
 }
